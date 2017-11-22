@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>devicepass</title>
+  <link rel="stylesheet" href="/css/font/iconfont.css">
+  <link rel="stylesheet/less"  type="text/css" href="/css/index.less">
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <ul class="appInfo">
+          <li class="appLogo">
+              <img :src="appInfo.appLogo" alt="">
+          </li>
+          <li class="appName">{{appInfo.appName}}</li>
+          <li class="appVersion">{{appInfo.appVersion}}</li>
+      </ul>
+      <ul class="userControl">
+        <li class="play" @click="startTask">
+          <i v-show="!taskStart" class="iconfont icon-ScriptStart"></i>
+          <i v-show="taskStart" class="iconfont icon-ScriptPause"></i>
+        </li>
+      </ul>
+    </header>
+    <div class="wrapper">
+      <div id="deviceInfo">
+        <div class="screen">
+          <canvas id="canvas" style="width: 100%; background:#fff; "></canvas>
+        </div>
+      </div>
+      <div class="task">
+        <ul class="taskInfo">
+          <li>
+            <p>Test Duration</p>
+            <p class="info">{{taskInfo.lastTime}}s</p>
+          </li>
+          <li>
+            <p>Screenshots</p>
+            <p class="info">{{taskInfo.taskList.length}}</p>
+          </li>
+          <li class="last">
+            <p>Detected Anomalies</p>
+            <p class="info">{{taskInfo.errorStep}} <span>({{(0 *100).toFixed(2)}}%)</span></p>
+          </li>
+        </ul>
+        <div id="container">
+          <div class="showBox" @mouseover = "mouseOverBox=true" @mouseleave="mouseOverBox=false">
+            <span class="btn leftBtn" :class="mouseOverBox?'show':''" @click="swipeLeft" @mouseover="showBtn" @mouseleave="hideBtn">
+                <i class="iconfont icon-swipe-left"></i>
+              </span>
+            <span class="btn rightBtn" :class="mouseOverBox?'show':''" @click="swipeRight" @mouseover="showBtn" @mouseleave="hideBtn">
+                <i class="iconfont icon-swipe-right"></i>
+            </span>
+            <div class="imgBox" >
+              <ul :style="'width:'+imgBoxWidth+'px;right:-'+postItem+'px;transition:all 0.5s;'">
+                  <li v-for="(item , index) in taskInfo.taskList" :class="item.open ?'cur':''">
+                    <p class="taskName">{{item.name}}</p>
+                    <img :src="item.after" alt="" class="base">
+                    <p>
+                      <span style="color:#2aa666">{{item.id}}</span>
+                      {{item.time}}
+                    </p>
+                  </li>
+                </ul>
+            </div>
+            <!--<div class="baseLine">-->
+              <!--<div>-->
+                <!--<span>Before Click</span>-->
+                <!--<img :src="taskInfo.currentRun.before" alt="" class="base">-->
+                <!--<p><span v-if="taskInfo.showTab == 'tree'">{{taskInfo.currentRun.name}}/path／</span><span style="color:#2aa666">{{taskInfo.currentRun.id}}</span> {{taskInfo.currentRun.lastTime}}</p>-->
+              <!--</div>-->
+            <!--</div>-->
+            <!--<div class="current">-->
+              <!--<div>-->
+                <!--<img :src="taskInfo.currentRun.after" alt="" class="base">-->
+                <!--<p><span v-if="taskInfo.showTab == 'tree'">{{taskInfo.currentRun.name}}/path／</span><span style="color:#2aa666" v-if="taskInfo.currentRun.current">{{taskInfo.currentRun.id}}</span> {{taskInfo.currentRun.time}}</p>-->
+                <!--<span>After Click</span>-->
+              <!--</div>-->
+            <!--</div>-->
+          </div>
+          <ul class="stepTab">
+              <li :class="taskInfo.showTab == 'list' ? 'cur':'' " >
+                <i class="iconfont icon-Tile"></i>
+              </li>
+          </ul>
+          <div class="taskView">
+            <ul class="list" v-if="taskInfo.showTab == 'list'" >
+              <li v-for="(item , index) in taskInfo.taskList" @click.stop="stepClick(item)"  :class="item.open? 'cur':''">
+                <span v-if="item.status == 'compeleted'">
+                  <div>{{index+1}}</div>
+                  <div>{{item.name}}</div>
+                </span>
+                <span v-else-if="item.status == 'error'" class="error">
+                  <p>{{index+1}}</p>
+                  <p>{{item.name}}</p>
+                </span>
+                <span v-else class="notCompeleted">
+                  <p>{{index+1}}</p>
+                  <p>{{item.name}}</p>
+                </span>
+              </li>
+            </ul>
+            <ul class="tree" v-if="taskInfo.showTab == 'tree'">
+              <li v-for="(item , index) in taskInfo.taskList"  @click="treeFolder(item)">
+                <div>
+                  <i class="iconfont " :class="!item.open? 'icon-StepGroup':'icon-folderopen'" :style="!item.open? '':'color:#73cffa'"></i>
+                  <span v-if="item.status == 'selected'" class="selected">{{index}}</span>
+                  <span v-else-if="item.status == 'notSelect'" class="notSelect">{{index}}</span>
+                  <span v-else class="empty">{{index}}</span>
+                  <span class="time">{{item.time}}</span>
+                </div>
+              </li>
+            </ul>
+            <ol class="tree" v-if="taskInfo.showTab == 'tree'">
+              <li>
+                <img :src="taskInfo.currentSelect.current" alt="">
+                <span><span  style="color:#2aa666">{{taskInfo.currentSelect.id}} </span>{{taskInfo.currentSelect.time}}</span>
+              </li>
+            </ol>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="libs/less.min.js"></script>
+  <script src="libs/vue.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

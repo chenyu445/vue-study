@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <div id="cart"><h1>cart</h1></div>
+  <script type="text/javascript" src="/libs/jquery-1.11.3.min.js"></script>
+  <script type="text/javascript">
+    // $('#cart').on('click',function(e){
+    //   console.log(this)
+    //   window.alert('OK')
+    // })
+
+    document.getElementById('cart').onclick = function(e){
+      e.preventDefault()
+      window.alert('这是原生')
+
+    }
+  </script>
+</body>
+</html>
